@@ -1,76 +1,42 @@
+import os
 from openai import OpenAI
+from tools.research_tool import ResearchTool, Question, Context
+from typing import List
+from tqdm import tqdm
 
+class PerplexityTool(ResearchTool):
+    def __init__(self):
+        self.api_key = os.environ["PERPLEXITY_API_KEY"]
 
-def test():
-    import requests
-    import os
-    from dotenv import load_dotenv
-    load_dotenv()
-    api_key = os.getenv("PERPLEXITY_API_KEY")    
+    def search(self, query: str):
+        client = OpenAI(api_key=self.api_key, base_url="https://api.perplexity.ai")
+        try:
+            response = client.chat.completions.create(
+                model="sonar",
+                messages=[
+                    {"role": "user", "content": query}
+                ],
+                stream=False
+            )
+        except Exception as ex:
+            print(ex)
+            return None
+        
+        if response:
+            content = response.choices[0].message.content
+            return content
+        return None
 
-    url = "https://api.perplexity.ai/chat/completions"
-
-    payload = {
-        "model": "sonar",
-        "messages": [
-            {
-                "role": "system",
-                "content": "Be precise and concise."
-            },
-            {
-                "role": "user",
-                "content": "How many stars are there in our galaxy?"
-            }
-        ],
-        "max_tokens": 123,
-        "temperature": 0.2,
-        "top_p": 0.9,
-        "search_domain_filter": ["https://semanticscholar.org"],
-        "return_images": False,
-        "return_related_questions": False,
-        "search_recency_filter": "year",
-        "top_k": 0,
-        "stream": False,
-        "presence_penalty": 0,
-        "frequency_penalty": 1,
-        "response_format": None
-    }
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    response = requests.post(url, json=payload, headers=headers)
-
-    print(response.text)    
+    def research(self, questions: List[Question]) -> List[Question]:    
+        questions_updated = []
+        for question in tqdm(questions, desc="researching perplexity", unit="question"):
+            response = self.search(question.question)
+            if response:
+                context = Context("Perplexity", response)
+                question_updated = question.add_context(context)
+                questions_updated.append(question_updated)
+        return questions_updated
 
 
 if __name__ == "__main__":
-    test()
-    # import os
-    # from dotenv import load_dotenv
-    # load_dotenv()
-    # api_key = os.getenv("PERPLEXITY_API_KEY")
-
-    # client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
-
-    # messages = [
-    #     {
-    #         "role": "system",
-    #         "content": (
-    #             "You are an expert at doing research on the internet."
-    #         )
-    #     },
-    #     {
-    #         "role": "user",
-    #         "content": (
-    #             "How many stars are there in the universe?"
-    #         )
-    #     }
-    # ]
-
-    # response = client.chat.completions.create(
-    #     model="sonar-pro",
-    #     messages=messages
-    # )    
-    # print(response)    
+    pass
