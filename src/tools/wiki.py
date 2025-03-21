@@ -20,7 +20,7 @@ class Wiki(ResearchTool):
         if len(results) > 0:
             result = results[0]
             try:
-                page = wikipedia.page(result)
+                page = wikipedia.page(title=result, auto_suggest=False)
                 return WikiResponse(page.title, page.summary)
             except Exception as page_ex:
                 print("page", page_ex)
@@ -33,27 +33,33 @@ class Wiki(ResearchTool):
         for question in questions:
             response = self.search(question)
             if response:
-                answers.append(response.content)
+                answers.append(f"{response.title}:\n\n{response.content}")
         return answers
 
 
-    # def research(self, questions: List[Question]) -> List[Question]:
-    #     questions_updated = []
-    #     for question in tqdm(questions, desc="researching wikipedia", unit="title"):
-    #         response = self.search(question.title)
-    #         if response:
-    #             context = Context(f"Wikipedia ({response.title})", response.content)
-    #             question_updated = question.add_context(context)
-    #             questions_updated.append(question_updated)
-    #     return questions_updated
+def get_wikipedia_article(query: str) -> str:
+    """Search for an article on Wikipedia.
+
+    The query should be formatted appropriately for Wikipedia articles. So instead of a long question, focus on what topics will likely be found as a Wikipedia article. Therefore, the `query` should look like an article title.
+
+    Args:
+        query (str): A query to find articles on Wikipedia.
+
+    Returns:
+        str: Wikipedia article text.
+    """        
+    wiki = Wiki()
+    answers = wiki.research([query])
+    return answers[0]
 
 
 if __name__ == "__main__":
-    query = "Goal-Setting Theory"
+    query = "Microservices architecture"
 
-    results = wikipedia.search(query, results=2)
-    page = wikipedia.page(results[0])
-    print(page.content)
+    results = wikipedia.search(query)
+    page_title = results[0]
+    print(page_title)
+    print(wikipedia.page(title=page_title, auto_suggest=False))
 
     # results = wikipedia.search("Python") # search for articles (keyword based)
     # page = wikipedia.page(results[0]) # load page details including content

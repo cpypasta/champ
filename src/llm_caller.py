@@ -1,20 +1,35 @@
-import requests, json, os
+import requests, json, os, ollama
 from groq import Groq
+from typing import List, Dict, Callable
+from tools.wiki import get_wikipedia_article
 
 class LLMCaller:
-    def __init__(self, model_name="qwen2.5:7b", base_url="http://localhost:11434/api"):
+    def __init__(
+            self, 
+            model_name="qwen2.5:7b", 
+            base_url="http://localhost:11434/api",
+            tools: List[Callable] = [],
+        ):
         self.model_name = model_name
         self.base_url = base_url
+        self.tools = tools
+        self.tool_lookup = {
+            tool.__name__: tool
+            for tool in tools
+        }
 
     def generate_groq(self, prompt: str) -> str:
         client = Groq(api_key=os.environ["GROQ_API_KEY"])
         completion = client.chat.completions.create(
-            model="qwen-qwq-32b",
+            model="qwen-2.5-32b",
+            # model="deepseek-r1-distill-llama-70b-specdec",
+            # model="qwen-qwq-32b",
+            # model="llama-3.3-70b-versatile",
             messages = [
                 {"role": "user", "content": prompt}
             ],
             stream=False,
-            reasoning_format="hidden"
+            # reasoning_format="hidden"
         )
         if completion:
             return completion.choices[0].message.content
@@ -41,8 +56,72 @@ class LLMCaller:
             print(response.text)
             return None
 
+    def chat_ollama(
+            self, 
+            prompt: str, 
+            format: str = None, 
+            tools: List[Dict] = None,
+            tool_calls: List[Dict] = []
+        ) -> ollama.ChatResponse:
+        messages = [
+            {"role": "user", "content": prompt}
+        ]
+        if len(tool_calls) > 0:
+            messages.extend(tool_calls)
+            
+        # print(json.dumps(messages, indent=4))
+
+        response = ollama.chat(
+            model=self.model_name, 
+            messages=messages, 
+            format=format,
+            tools=tools
+        )
+        return response
+
+    def chat(
+            self, 
+            prompt: str, 
+            format: str = None, 
+        ) -> str:
+        response = self.chat_ollama(prompt, format=format, tools=self.tools)
+        if response and "message" in response:
+            message: ollama.Message = response["message"]
+            if "tool_calls" in message:
+                message_tool_calls: List[ollama.Message.ToolCall] = message.tool_calls
+                tool_responses = [message.model_dump()]
+                for tool in message_tool_calls:
+                    print(f"{tool.function.name}...")
+                    tool_function = self.tool_lookup[tool.function.name]
+                    tool_arguments = tool.function.arguments
+                    if isinstance(tool_arguments, str):
+                        tool_response = tool_function(tool_arguments)
+                    else:
+                        tool_response = tool_function(**tool_arguments)
+                    tool_responses.append({ "role": "tool", "content": str(tool_response), "name": tool.function.name})
+                    
+                final_tool_result = self.chat_ollama(
+                    prompt, 
+                    format=format, 
+                    tool_calls=tool_responses
+                )
+                final_answer = final_tool_result.message.content
+            else:
+                final_answer = message.content
+        else:
+            return None
+        
+        if format == "json":
+            try:
+                return json.loads(final_answer)
+            except:
+                return final_answer
+        else:
+            return final_answer
+
     def generate(self, prompt, json_format=False):
-        response = self.generate_ollama(prompt, json_format=json_format)
+        # response = self.generate_ollama(prompt, json_format=json_format)
+        response = self.generate_groq(prompt)
         if response:
             if json_format:
                 try:
@@ -55,8 +134,29 @@ class LLMCaller:
             return None
         
 
+def add_numbers(a: float, b: float) -> float:
+    """Adds two numbers and return the result.
+    
+    Args:
+        a (float): First number.
+        b (float): Second number.
+
+    Returns:
+        float: The sum of the two numbers.
+    """
+    return a + b
+
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    caller = LLMCaller()
-    print(caller.generate_groq("hello world"))
+
+    tools = [
+        get_wikipedia_article
+    ]
+
+    caller = LLMCaller(        
+        tools=tools
+    )
+
+    print(caller.chat("""What are the key componets of a microservice architecture? Use Wikipedia to research the topic.
+    """, format=None))

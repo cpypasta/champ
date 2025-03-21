@@ -37,6 +37,16 @@ class PerplexityTool(ResearchTool):
                 questions_updated.append(question_updated)
         return questions_updated
 
+def search_internet(query: str) -> str:
+    """Search the internet to find the latest information about any topic.
+
+    Args:
+        query (str): The topic to search for.
+
+    Returns:
+        str: The latest information about the topic.    
+    """
+    return PerplexityTool().search(query)
 
 if __name__ == "__main__":
     pass
