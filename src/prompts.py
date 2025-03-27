@@ -591,3 +591,64 @@ Given that AI transforms job markets by creating new job types and modifying exi
 
 ### Key Topics
 """
+
+# SOLVER
+# Provide the names in the format "Lastname, FirstInitial. MiddleInitial."
+def article_citation(url: str, meta_tags: List[str], content: str) -> str:
+    meta_tags_combined = "\n".join([f"* {tag}" for tag in meta_tags]) 
+    return f"""You are an expert at reading the text (extracted from HTML) from an online article and extracting information.
+
+# Context
+## URL:
+{url}
+
+## Meta Tags:
+{meta_tags_combined}
+
+## Content:
+{content}
+</article>
+
+# Instructions
+Please return the information in the format requested so that it is easy to extract the information.
+
+Please provide the published date in the format "YYYY-MM-DD". If only year and month is found, just include the year (ignore month).
+
+Please a semi-colon to separate authors if there are more than one.
+If the resource was written by a group or organization, use the name of the group/organization as the author.
+
+If you cannot find author information or published date use the value "None".
+
+**PLEASE RESPOND IN THE EXACT FORMAT REQUESTED!**
+
+Create a response in the following format:
+* AUTHORS: <authors>
+* PUBLISHED_DATE: <published_date>
+
+Example Response:
+* AUTHORS: Deanna Debara
+* PUBLISHED_DATE: 2022-06-22
+
+# Assistant
+"""
+
+def valid_authors(authors: List[str]) -> str:
+    names = [f"* NAME: {name}" for name in authors]
+    names = "\n".join(names)
+    return f"""Which of the following values look like a human name?
+
+Please return each name with the syntax: `NAME: <name>`
+
+# Possible Human Names
+{names}
+
+# Valid Human Names
+"""
+
+def key_topic_overview(key_topic: str) -> str:
+    return f"""Provide a high-level overview of the following topic:
+
+"{key_topic}"
+
+Please format the response in a way that is concise, clear, and easily readable. Include only the important only.
+"""

@@ -1,7 +1,8 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth #https://github.com/Mattwmaster58/playwright_stealth
+from typing import Optional
 
-def fetch(url: str):
+def fetch(url: str) -> Optional[str]:
     try:
         with Stealth().use_sync(sync_playwright()) as playwright:
             browser = playwright.chromium.launch(headless=True)
@@ -15,9 +16,10 @@ def fetch(url: str):
             browser.close()
             return html
     except Exception as ex:
-        print(ex)
-        return ""
+        # print(ex)
+        return None
 
 
 if __name__ == "__main__":
-    fetch("https://www.semanticscholar.org/paper/84c8c874633fbb0aa1e48276fb31b1869d9b6766")    
+    # fetch("https://www.semanticscholar.org/paper/84c8c874633fbb0aa1e48276fb31b1869d9b6766")   
+    fetch("https://study.com/learn/lesson/growth-development-overview-examples.html") 

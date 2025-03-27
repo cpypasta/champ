@@ -5,8 +5,6 @@ from rich.panel import Panel
 from rich import print as rprint
 from llm_caller import LLMCaller
 from typing import List, Optional
-from tools.math import multiply_numbers
-from tools.perplexity import search_internet
 
 @dataclass
 class Observation:
@@ -82,6 +80,9 @@ class React:
 
 
 if __name__ == "__main__":
+    from tools.math import multiply_numbers
+    from tools.perplexity import search_internet
+
     # question = "What is 2 + 2 * 7?"
     question = "What are the best use-cases for microservices? Be sure to consider my team consists mainly of inexperienced developers."
     react = React(LLMCaller(tools=[multiply_numbers, search_internet]))

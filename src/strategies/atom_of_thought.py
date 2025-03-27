@@ -1,5 +1,5 @@
 import networkx as nx, prompts, re
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich import print as rprint
@@ -39,14 +39,9 @@ class AtomOfThought:
         self.llm = llm_caller
         self.debug = debug
 
-    def decompose_question(self, question: str) -> nx.DiGraph:
-        prompt = prompts.decompose_question(question)
-        subquestions = self.llm.generate(prompt)
-        if self.debug:
-            rprint(Panel(Markdown(subquestions), title="Decompose Question"))
-
+    def _extract_subquestions(self, text: str) -> Tuple[str, List[str]]:
         subquestion_pairs = []
-        subquestion_matches = re.finditer(r"\*\sSubquestion\s\d+(?:\n|\s).*?(?=\n*\*\sSubquestion\s\d+|$)", subquestions, flags=re.DOTALL)
+        subquestion_matches = re.finditer(r"\*\s+Subquestion\s\d+(?:\n|\s).*?(?=\n*\*\s+Subquestion\s\d+|$)", text, flags=re.DOTALL)
         for match in subquestion_matches:
             match = match.group(0).strip()
             subquestion = re.search(r"Subquestion:\s(.*)", match)
@@ -66,6 +61,20 @@ class AtomOfThought:
                     subquestion_pairs.append((subquestion, dependencies))
                 else:
                     subquestion_pairs.append((subquestion, None))
+        return subquestion_pairs
+        
+
+    def decompose_question(self, question: str) -> nx.DiGraph:
+        prompt = prompts.decompose_question(question)
+        subquestions = self.llm.generate(prompt)
+        if self.debug:
+            rprint(Panel(Markdown(subquestions), title="Decompose Question"))
+
+
+        with open("decomposition.md", "w") as f:
+            f.write(subquestions)
+            
+        subquestion_pairs = self._extract_subquestions(subquestions)
         
         G = nx.DiGraph()
         for subquestion, dependencies in subquestion_pairs:
@@ -82,7 +91,11 @@ class AtomOfThought:
         ]        
         question_answers = zip(subquestions, answers)
         answers = [
-            f"* **Subquestion**: {question}\n* **Answer**: {answer}"
+            f"""* **Subquestion**: {question}
+* **Answer**: 
+```
+{answer}
+```"""
             for question, answer in question_answers
         ]
         if self.debug:
@@ -101,7 +114,7 @@ class AtomOfThought:
             return decision.lower().strip() == "yes"
         return False
 
-    def solve_problem(self, problem: str, terminate_on_answer: bool = True) -> Dict[str, str]:
+    def solve_problem(self, problem: str, terminate_on_answer: bool = True, just_question: bool = False) -> Dict[str, str]:
         """A way of decomposing a question into subquestions. These subquestions get `compacted` into a single question. Therefore, this can be used to simply reword a question considering it's atomic subquestions. If `terminate_on_answer` is `True`, then this will stop the DAG traversal on a valid answer.
 
         Args:
@@ -142,7 +155,7 @@ class AtomOfThought:
                 # however, if evaluation fails it will decompose the same question
                 Qi_next = Qi
         
-            if terminate_on_answer:
+            if terminate_on_answer and not just_question:
                 # try to answer question
                 Ai = self.answer_question(Qi_next)
                 if self.valid_answer(Qi_next, Ai):
@@ -155,7 +168,10 @@ class AtomOfThought:
             Qi = Qi_next    
             i += 1
 
-        Ai = self.answer_question(Qi)
+        if not just_question:
+            Ai = self.answer_question(Qi)
+        else:
+            Ai = None
 
         return {
             "question": Qi,
@@ -165,14 +181,19 @@ class AtomOfThought:
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
     # question = "Find operations to make 24 from the number: 4, 9, 10, and 13."
     # question = "What are the best use-cases for microservices?"
     # question = "Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?"
     # question = "What are the societal impacts of automation?"
-    question = "How can traffic congestion be reduced in large cities?"
+    # question = "How can traffic congestion be reduced in large cities?"
+    question = "How do the underlying theories of goal-setting and self-determination support the five factor theory for scrum team effectiveness?"
 
     llm = LLMCaller()
     atom = AtomOfThought(llm)
-    response = atom.solve_problem(question)
+    response = atom.solve_problem(question, just_question=True)
     rprint(Panel(Markdown(response["question"]), title="Final Question"))
     rprint(Panel(Markdown(response["answer"]), title="Final Answer"))
+    

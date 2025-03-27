@@ -7,9 +7,6 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich import print as rprint
 from enum import Enum
-from tools.wiki import get_wikipedia_article
-from tools.perplexity import search_internet
-from tools.math import multiply_numbers
 
 class EvaluationStrategy(Enum):
     CALCULATE = "calculate"
@@ -296,6 +293,10 @@ class TreeOfThought:
         return None
 
 if __name__ == "__main__":
+    from tools.wiki import get_wikipedia_article
+    from tools.perplexity import search_internet
+    from tools.math import multiply_numbers
+
     tools = [
         get_wikipedia_article,
         search_internet,

@@ -1,14 +1,42 @@
-import os
+import os, re
 from openai import OpenAI
-from tools.research_tool import ResearchTool, Question, Context
-from typing import List
-from tqdm import tqdm
+from typing import List, Dict, Tuple
+from tools.article import ResearchArticle, ArticleCitation
+from llm_caller import LLMCaller
 
-class PerplexityTool(ResearchTool):
-    def __init__(self):
+class PerplexityTool():
+    def __init__(self, llm_caller: LLMCaller):
+        self.llm = llm_caller
+        self.article = ResearchArticle(llm_caller)
         self.api_key = os.environ["PERPLEXITY_API_KEY"]
 
-    def search(self, query: str):
+    def _replace_inline_references(self, content: str, citations: List[ArticleCitation]) -> Tuple[str,List[ArticleCitation]]:
+        single_inline_reference_pattern = r"\[(\d+)\]"      
+        all_inline_reference_pattern = r"\[\d+\](?:\s*\[\d+\])*"
+        matches = re.finditer(all_inline_reference_pattern, content)
+        citations_used = {}
+        for match in sorted(matches, key=lambda x: x.start(), reverse=True):
+            reference = match.group(0)
+            inline_citation_ids = re.findall(single_inline_reference_pattern, reference)
+            inline_citation_ids = [int(num) for num in inline_citation_ids]
+
+            inline_citations = [
+                citations[num-1]
+                for num in inline_citation_ids
+                if num <= len(citations)
+            ]
+
+            if inline_citations:
+                for citation in inline_citations:
+                    citations_used[citation.url] = citation
+                inline_citations = [citation.inline() for citation in inline_citations]
+                inline_citations = sorted(inline_citations)
+                combined_citation = f" ({'; '.join(inline_citations)})"
+                content = content[:match.start()] + combined_citation + content[match.end():]      
+
+        return content, citations_used.values()
+
+    def search(self, query: str, update_citations: bool = True) -> Dict:
         client = OpenAI(api_key=self.api_key, base_url="https://api.perplexity.ai")
         try:
             response = client.chat.completions.create(
@@ -22,20 +50,21 @@ class PerplexityTool(ResearchTool):
             print(ex)
             return None
         
-        if response:
+        if response:           
+            urls: List[str] = response.citations if hasattr(response, "citations") else []
             content = response.choices[0].message.content
-            return content
-        return None
 
-    def research(self, questions: List[Question]) -> List[Question]:    
-        questions_updated = []
-        for question in tqdm(questions, desc="researching perplexity", unit="question"):
-            response = self.search(question.question)
-            if response:
-                context = Context("Perplexity", response)
-                question_updated = question.add_context(context)
-                questions_updated.append(question_updated)
-        return questions_updated
+            if update_citations:
+                citations: List[ArticleCitation] = [self.article.cite(url) for url in urls]
+                content, citations = self._replace_inline_references(content, citations)
+            else:
+                citations = urls
+
+            return {
+                "content": content,
+                "citations": citations
+            }
+        return None
 
 def search_internet(query: str) -> str:
     """Search the internet to find the latest information about any topic.
@@ -49,4 +78,24 @@ def search_internet(query: str) -> str:
     return PerplexityTool().search(query)
 
 if __name__ == "__main__":
-    pass
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    llm = LLMCaller()
+    perp = PerplexityTool(llm)
+    response = perp.search("""Provide a high-level overview of the following topic:
+
+# "Goal-Setting Theory"
+
+# Please format the response in a way this concise, clear, and easily readable. Include only the important information only.""")
+    
+    from rich import print as rprint
+    from rich.markdown import Markdown
+    rprint(Markdown(response["content"]))
+
+    print()
+    for c in response["citations"]:
+        print(c.reference())
+
+    with open("debug.md", "w") as f:
+        f.write(response["content"])

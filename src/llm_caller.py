@@ -2,14 +2,18 @@ import requests, json, os, ollama
 from groq import Groq
 from typing import List, Dict, Callable
 from tools.wiki import get_wikipedia_article
+from google import genai
+from google.genai import types
 
 class LLMCaller:
     def __init__(
             self, 
+            provider="ollama",
             model_name="qwen2.5:7b", 
             base_url="http://localhost:11434/api",
             tools: List[Callable] = [],
         ):
+        self.provider = provider
         self.model_name = model_name
         self.base_url = base_url
         self.tools = tools
@@ -17,6 +21,34 @@ class LLMCaller:
             tool.__name__: tool
             for tool in tools
         }
+
+
+    def generate_gemini(self, prompt: str) -> str:
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        model = "gemini-2.0-flash-lite"
+        contents = [
+            types.Content(
+                role="user",
+                parts=[
+                    types.Part.from_text(text=prompt)
+                ]
+            )
+        ]
+        generate_content_config = types.GenerateContentConfig(
+            temperature=1,
+            top_p=0.95,
+            top_k=40,
+            max_output_tokens=8192,
+            response_mime_type="text/plain"
+        )
+
+        response: types.GenerateContentResponse = client.models.generate_content(
+            model=model,
+            contents=contents,
+            config=generate_content_config
+        )
+        return response.text        
+
 
     def generate_groq(self, prompt: str) -> str:
         client = Groq(api_key=os.environ["GROQ_API_KEY"])
@@ -40,7 +72,8 @@ class LLMCaller:
     def generate_ollama(self, prompt: str, json_format: bool=True) -> str:
         url = f"{self.base_url}/generate"
         payload = {
-            "model": self.model_name,
+            # "model": "deepseek-r1:14b",
+            "model": "qwen2.5:7b",
             "prompt": prompt,
             "stream": False,
         }
@@ -55,6 +88,7 @@ class LLMCaller:
         else:
             print(response.text)
             return None
+
 
     def chat_ollama(
             self, 
@@ -120,8 +154,13 @@ class LLMCaller:
             return final_answer
 
     def generate(self, prompt, json_format=False):
-        # response = self.generate_ollama(prompt, json_format=json_format)
-        response = self.generate_groq(prompt)
+        if self.provider == "ollama":
+            response = self.generate_ollama(prompt, json_format=json_format)
+        elif self.provider == "groq":
+            response = self.generate_groq(prompt)
+        else:
+            response = self.generate_gemini(prompt)
+
         if response:
             if json_format:
                 try:
@@ -158,5 +197,6 @@ if __name__ == "__main__":
         tools=tools
     )
 
-    print(caller.chat("""What are the key componets of a microservice architecture? Use Wikipedia to research the topic.
-    """, format=None))
+    # print(caller.chat("""What are the key componets of a microservice architecture? Use Wikipedia to research the topic.""", format=None))
+
+    print(caller.generate("What are microservices?"))
