@@ -1,12 +1,15 @@
-*   Subquestion 1
-    *   Subquestion: What are the key functions of Zinc in the human body?
-    *   Dependencies: None
-*   Subquestion 2
-    *   Subquestion: What are the health benefits associated with those functions in a healthy adult?
-    *   Dependencies: Subquestion 1
-*   Subquestion 3
-    *   Subquestion: What are the recommended daily intake levels of Zinc for a healthy adult?
-    *   Dependencies: None
-*   Subquestion 4
-    *   Subquestion: What are the potential risks or side effects of Zinc supplementation in a healthy adult?
-    *   Dependencies: None
+* Subquestion 1
+  * Subquestion: What are the core tenets of goal-setting theory?
+  * Dependencies: None
+* Subquestion 2
+  * Subquestion: What are the core tenets of self-determination theory?
+  * Dependencies: None
+* Subquestion 3
+  * Subquestion: What are the core principles and factors within the Five Factor Theory (specifically, how can they be used to describe a team)?
+  * Dependencies: None
+* Subquestion 4
+  * Subquestion: How does goal-setting theory contribute to the Five Factor Theory in Scrum teams?
+  * Dependencies: Subquestion 1, Subquestion 3
+* Subquestion 5
+  * Subquestion: How does self-determination theory contribute to the Five Factor Theory in Scrum teams?
+  * Dependencies: Subquestion 2, Subquestion 3

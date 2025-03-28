@@ -1,4 +1,4 @@
-import requests, json, os, ollama
+import requests, json, os, ollama, requests
 from groq import Groq
 from typing import List, Dict, Callable
 from tools.wiki import get_wikipedia_article
@@ -9,9 +9,9 @@ class LLMCaller:
     def __init__(
             self, 
             provider="ollama",
-            model_name="qwen2.5:7b", 
+            model_name=None, 
             base_url="http://localhost:11434/api",
-            tools: List[Callable] = [],
+            tools: List[Callable] = []
         ):
         self.provider = provider
         self.model_name = model_name
@@ -23,9 +23,9 @@ class LLMCaller:
         }
 
 
-    def generate_gemini(self, prompt: str) -> str:
+    def generate_gemini(self, prompt: str, search: bool = False) -> str:
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        model = "gemini-2.0-flash-lite"
+        model = self.model_name or "gemini-2.0-flash-lite"
         contents = [
             types.Content(
                 role="user",
@@ -34,12 +34,18 @@ class LLMCaller:
                 ]
             )
         ]
+        if search:
+            tools = [types.Tool(google_search=types.GoogleSearch())]
+        else:
+            tools = None
+
         generate_content_config = types.GenerateContentConfig(
             temperature=1,
             top_p=0.95,
             top_k=40,
             max_output_tokens=8192,
-            response_mime_type="text/plain"
+            response_mime_type="text/plain",
+            tools=tools
         )
 
         response: types.GenerateContentResponse = client.models.generate_content(
@@ -47,7 +53,18 @@ class LLMCaller:
             contents=contents,
             config=generate_content_config
         )
-        return response.text        
+        
+        if search:
+            return {
+                "content": response.text,
+                "grounding": response.candidates                        
+            }
+                        
+
+        return {
+            "content": response.text,
+            "grounding": []                    
+        }       
 
 
     def generate_groq(self, prompt: str) -> str:
@@ -113,6 +130,7 @@ class LLMCaller:
         )
         return response
 
+
     def chat(
             self, 
             prompt: str, 
@@ -153,13 +171,14 @@ class LLMCaller:
         else:
             return final_answer
 
+
     def generate(self, prompt, json_format=False):
         if self.provider == "ollama":
             response = self.generate_ollama(prompt, json_format=json_format)
         elif self.provider == "groq":
             response = self.generate_groq(prompt)
         else:
-            response = self.generate_gemini(prompt)
+            response = self.generate_gemini(prompt)["content"]
 
         if response:
             if json_format:
@@ -194,9 +213,10 @@ if __name__ == "__main__":
     ]
 
     caller = LLMCaller(        
-        tools=tools
+        provider="gemini",
+        model_name="gemini-2.0-flash"
     )
 
     # print(caller.chat("""What are the key componets of a microservice architecture? Use Wikipedia to research the topic.""", format=None))
-
-    print(caller.generate("What are microservices?"))
+    # print(caller.generate("What are microservices?"))
+    print(caller.generate_gemini("What is Zinc?", search=True))

@@ -650,5 +650,42 @@ def key_topic_overview(key_topic: str) -> str:
 
 "{key_topic}"
 
-Please format the response in a way that is concise, clear, and easily readable. Include only the important only.
+Please format the response in a way that is concise, clear, and easily readable. Include only the important information.
+"""
+
+def key_concept_overview(key_concept: str, strategy: str) -> str:
+    return f"""You are an expert at answering research questions using the requested strategy.
+
+Special Instructions:
+Please do not include any unnecessary introductions or endings.
+
+Research question:
+"{key_concept}"
+
+Research Strategy:
+"{strategy}"
+"""
+
+def consolidate_concept_overviews(key_concept: str, answers: List[str]) -> str:
+    answers_combined = [
+        f"## Candidate {i+1}\n\n```markdown\n\n{answer}\n```" 
+        for i, answer in enumerate(answers)
+    ]
+    answers_combined = '\n\n'.join(answers_combined)
+
+    return f"""Please evaluate the following candidate responses to the question and create a comprehensive answer that combines the best points from each while eliminating redundancies:
+
+# Question
+"{key_concept}" 
+
+# Candidates
+{answers_combined}
+
+# Instructions
+Based on the candidate responses above, please create a single cohesive answer that:
+1. Combines unique insights from all responses
+2. Organizes the answer in a way that makes the content clear
+3. Uses markdown formatting for readability
+
+Please do not include any unnecessary introductions or endings.
 """

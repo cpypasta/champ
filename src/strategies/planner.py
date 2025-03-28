@@ -173,7 +173,7 @@ class ResearchPlanner:
 ## Key Concepts
 {combined_concepts}
 """
-        rprint(Panel(Markdown(outline), title="Outline", title_align="left"))
+        # rprint(Panel(Markdown(outline), title="Outline", title_align="left"))
         with open("outline.md", "w") as f:
             f.write(outline)
 

@@ -1,6 +1,7 @@
 import pickle, prompts, re
 from strategies.planner import ResearchPlan, ResearchConcept
 from tools.perplexity import PerplexityTool
+from tools.gemini import Gemini
 from llm_caller import LLMCaller
 from dataclasses import dataclass, field
 from typing import List
@@ -17,15 +18,25 @@ class TopicOverview:
     overview: str = None
 
 @dataclass
+class ConceptOverview:
+    concept: str
+    overview: str = None
+
+@dataclass
 class ResearchReport:
     plan: ResearchPlan
     topics: List[TopicOverview] = field(default_factory=list)
+    concepts: List[ConceptOverview] = field(default_factory=list)
     citations: List[ArticleCitation] = field(default_factory=list)
 
     def markdown(self) -> str:
         combined_topics = "\n\n".join([
             f"### {topic.topic.upper()}\n{topic.overview}"
             for topic in self.topics
+        ])
+        combined_concepts = "\n\n".join([
+            f"### {concept.concept.upper()}\n{concept.overview}"
+            for concept in self.concepts
         ])
         self.citations = list({citation.url: citation for citation in self.citations}.values())
         references = [citation.reference() for citation in self.citations]
@@ -40,6 +51,9 @@ class ResearchReport:
 ## Key Topics
 {combined_topics}
 
+## Key Concepts
+{combined_concepts}
+
 ## References
 {combined_references}
 """
@@ -48,6 +62,7 @@ class Researcher:
     def __init__(self, fast_llm: LLMCaller):
         self.fast_llm = fast_llm
         self.internet = PerplexityTool(fast_llm)
+        self.gemini = Gemini()
 
     def research(self, plan: ResearchPlan) -> ResearchReport:
         class PercentColumn(ProgressColumn):
@@ -85,13 +100,12 @@ class Researcher:
         rprint(f"[dim]Research Question: {plan.question}")
         start_time = time()
         key_topics = plan.key_topics
+        key_concepts = plan.key_concepts
         
-        report = ResearchReport(
-            plan            
-        )
+        report = ResearchReport(plan)
 
         with create_progress() as progress:
-            task = progress.add_task("Researching key topics", total=len(key_topics))
+            task = progress.add_task("[green]■ Researching key topics", total=len(key_topics))
             topic_overviews = []
             for topic in key_topics:
                 topic = re.sub(r"\:.*", "", topic).replace("**", "")
@@ -102,10 +116,39 @@ class Researcher:
                     topic_overview_content = topic_overview_content.replace("##", "####").replace("#######", "######")
                     topic_overviews.append(TopicOverview(topic, topic_overview_content))                
                     report.citations.extend(topic_overview["citations"])
+
                 progress.update(task, advance=1)
 
             report.topics = topic_overviews
 
+        with create_progress() as progress:
+            task = progress.add_task("[green]■ Researching key concepts", total=len(key_concepts))
+            concept_overviews = []
+            for concept in key_concepts:
+                question = concept.question
+                strategy_overviews = []
+                strategies_task = progress.add_task(f"  [blue]○ Researching strategies: {concept.title}", total=len(concept.ideas))
+                for idea in concept.ideas:
+                    strategy_overview_prompt = prompts.key_concept_overview(question, idea)
+                    strategy_overview = self.fast_llm.generate(strategy_overview_prompt)
+                    strategy_overviews.append(strategy_overview)
+                    progress.update(strategies_task, advance=1)
+                progress.remove_task(strategies_task)
+
+                summarize_task = progress.add_task(f"  [blue]○ Summarizing strategies: {concept.title}", total=None)
+                concept_overview_prompt = prompts.consolidate_concept_overviews(question, strategy_overviews)
+                concept_overview = self.gemini.search(concept_overview_prompt)                
+                if concept_overview:
+                    concept_overview_content = concept_overview.get("content")
+                    concept_overview_content = concept_overview_content.replace("##", "####").replace("#######", "######")
+                    concept_overviews.append(ConceptOverview(concept.title, concept_overview_content))
+                    report.citations.extend(concept_overview["citations"])
+                progress.remove_task(summarize_task)
+
+                progress.update(task, advance=1)                
+
+            report.concepts = concept_overviews
+                
         stop_time = time()
         duration = format_duration(timedelta(seconds=stop_time - start_time))
         rprint(f"[dim]Research Complete {duration}")
