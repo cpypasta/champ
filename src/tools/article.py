@@ -1,5 +1,5 @@
-import prompts, re, json
-from llm_caller import LLMCaller
+import config.prompts as prompts, re, json
+from tools.llm_caller import LLMCaller
 from bs4 import BeautifulSoup
 from dataclasses import dataclass, field
 from typing import List
@@ -58,7 +58,7 @@ class ArticleCitation:
 
         # print(json.dumps(csl_data, indent=4))
 
-        style = CitationStylesStyle("apa-6th-edition.csl", validate=False)        
+        style = CitationStylesStyle("./config/apa-6th-edition.csl", validate=False)        
         source = CiteProcJSON([csl_data])
         biblio = CitationStylesBibliography(style, source)
         citation = Citation([CitationItem("source1")])

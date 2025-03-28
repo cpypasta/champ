@@ -1,11 +1,11 @@
-import networkx as nx, prompts, re
+import networkx as nx, config.prompts as prompts, re
 from typing import List, Dict, Tuple
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich import print as rprint
 from rich.console import Console
 from rich.tree import Tree
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 import matplotlib.pyplot as plt
 
 def print_graph(G):

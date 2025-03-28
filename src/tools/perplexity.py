@@ -2,7 +2,7 @@ import os, re
 from openai import OpenAI
 from typing import List, Dict, Tuple
 from tools.article import ResearchArticle, ArticleCitation
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 
 class PerplexityTool():
     def __init__(self, llm_caller: LLMCaller):

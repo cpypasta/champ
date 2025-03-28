@@ -1,15 +1,15 @@
 * Subquestion 1
-  * Subquestion: What are the core tenets of goal-setting theory?
+  * Subquestion: What is the Five Factor Theory (FFT) in the context of team effectiveness?
   * Dependencies: None
 * Subquestion 2
-  * Subquestion: What are the core tenets of self-determination theory?
+  * Subquestion: What are the core principles of Goal-Setting Theory?
   * Dependencies: None
 * Subquestion 3
-  * Subquestion: What are the core principles and factors within the Five Factor Theory (specifically, how can they be used to describe a team)?
+  * Subquestion: What are the core principles of Self-Determination Theory (SDT)?
   * Dependencies: None
 * Subquestion 4
-  * Subquestion: How does goal-setting theory contribute to the Five Factor Theory in Scrum teams?
-  * Dependencies: Subquestion 1, Subquestion 3
+  * Subquestion: How does Goal-Setting Theory relate to the factors in the Five Factor Theory?
+  * Dependencies: Subquestion 1, Subquestion 2
 * Subquestion 5
-  * Subquestion: How does self-determination theory contribute to the Five Factor Theory in Scrum teams?
-  * Dependencies: Subquestion 2, Subquestion 3
+  * Subquestion: How does Self-Determination Theory relate to the factors in the Five Factor Theory?
+  * Dependencies: Subquestion 1, Subquestion 3

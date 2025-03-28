@@ -359,191 +359,193 @@ Only return the `Observation`. Do **NOT** suggest any new actions.
 {observation.markup()}
 """
 
-# Planning
+# PLANNER
 
 def question_concepts(question: str) -> str:
-    return f"""Extract the key concepts from the following research question. Break down the question into its fundamental components, such as the subject, the process or action, the affected entities, and the outcomes or impacts. List these concepts and provide a brief explanation of why each is central to understanding and answering the question.
+    return f"""
+# Deep Conceptual Analysis for Research Questions
+
+Analyze the following research question by identifying its underlying conceptual frameworks, mechanisms, and relationships. Your goal is to extract the deeper scientific or theoretical elements that would be essential for a comprehensive investigation.
+
+Instead of restating obvious components of the question, focus on:
+
+1. Core biological/chemical/physical mechanisms that underlie the phenomenon
+2. Key variables and their interactions (both explicit and implicit)
+3. Theoretical frameworks relevant to the question
+4. Methodological considerations that would be crucial
+5. Contextual factors that might influence findings
+
+For each concept:
+- Explain why it's fundamental to addressing the question (not just "because it's mentioned")
+- Describe specific aspects that would need investigation
+- Connect it to broader scientific principles or theories
 
 ## Example
-### Question
+### Research Question
 How does the replacement of human labor with technology, particularly in manufacturing, retail, transportation and logistics, healthcare, customer service and support, finance, hospitality, and other sectors most affected by automation, impact employment rates, income distribution, social inequality, and the skills and education needs of the workforce?
 
-### Concepts
-* **Automation**: This is the core technology driving the changes in labor. It’s central because the entire question revolves around its implementation and effects across various sectors.
-* **Replacement of Human Labor**: This is the specific process being examined. Understanding how and why human jobs are being replaced is essential to addressing the question’s focus on technological substitution.
-* **Sectors Affected (e.g., manufacturing, retail, transportation)**: These are the key areas where automation is applied. Their inclusion is critical because the question specifies them as the primary domains of impact, and each sector may experience unique effects.
-* **Employment Rates**: This is a direct outcome of labor replacement. It’s central because the question seeks to understand how automation influences job availability across the workforce.
-* **Income Distribution**: This concept addresses how automation might alter economic equity. It’s vital for exploring whether technological changes concentrate wealth or redistribute it.
-* **Social Inequality**: This outcome examines whether automation widens or narrows societal gaps. It’s key to assessing the broader human and ethical implications of the technology.
-* **Skills and Education Needs**: This reflects the workforce’s adaptation to automation. It’s essential for understanding how job requirements shift and what training is needed to mitigate negative impacts.
+### Deep Conceptual Analysis
+* **Creative destruction process**: The economic mechanism through which technological innovation simultaneously eliminates existing jobs while creating new ones. Investigation would need to examine historical patterns and ratios of job creation-to-destruction across various technological transitions, and how the AI/automation wave might differ from previous industrial revolutions.
 
-## Assistant
-### Question
+* **Productivity-compensation decoupling**: The growing gap between productivity gains from technology and corresponding wage growth. This phenomenon challenges traditional economic theories assuming productivity gains naturally translate to higher wages, suggesting investigation into how automation-driven productivity affects different wage tiers.
+
+* **Task-based labor market framework**: This theoretical model distinguishes between routine and non-routine tasks, explaining why certain roles are more automation-susceptible than others. Analysis would need to examine specific task compositions across sectors and how emerging technologies shift the boundaries of what's considered routine.
+
+* **Network effects in labor displacement**: How automation in interconnected industries creates cascade effects that amplify beyond direct replacement. Research would need to map complex interdependencies between sectors and model second/third-order employment impacts.
+
+* **Skill polarization dynamics**: The tendency of automation to hollow out middle-skill jobs while preserving high and low-skill work. Investigation would measure distribution changes across skill categories and analyze whether this creates "missing rungs" in career advancement ladders.
+
+## Your Task
+Provide a deep conceptual analysis for the following research question:
+
 {question}
-
-### Concepts
 """
 
 def rephrase_concept(subject: str, concept: str) -> str:
-    return f"""Rephrase the provided key concept into a research question. The new question should be concise and suitable for brainstorming approaches to explore that concept. The subject of the concept will be provided to ensure the context is clear.
+    return f"""
+# Formulating Precise Research Questions from Concepts
 
-The research question you provide should be in plain text with no special formatting. I want to work with your response and it is easier for me if it just the research question in plain text.
+Transform the provided concept into a focused, actionable research question that captures its full scope and complexity. Your question should encompass all key variables, relationships, and investigative aspects described in the concept.
 
-Guidance:
-1. If the concept is a person, place, or thing (i.e., a noun), consider asking about its definition, role, or impact.  
-   - *Example:* For "AI," ask, "What is AI, and how does it shape modern technology?"
-2. If the concept involves a relationship between two or more things, consider phrasing the question in terms of correlation or association.  
-   - *Example:* For "AI and Employment," ask, "What is the relationship between AI adoption and employment trends?"
-3. If the concept implies one thing causing another, consider phrasing the question in terms of causation or influence.  
-   - *Example:* For "AI causing job displacement," ask, "To what extent does AI cause job displacement in traditional industries?"
-4. If the concept is an outcome or impact, consider asking how or why it occurs.  
-   - *Example:* For "Economic Implications of AI," ask, "How does AI adoption impact economic productivity and inequality?"
-5. If the concept is a process or method, consider asking how it works or what its effects are.  
-   - *Example:* For "Automation in Healthcare," ask, "How does automation in healthcare affect efficiency and patient outcomes?"
-6. If the concept is a theory or model, consider asking how it explains or applies to a specific situation.  
-   - *Example:* For "Skill-Biased Technical Change," ask, "How does skill-biased technical change explain workforce skill shifts?"
+The research question should:
+1. Be concise (ideally 20-30 words) but comprehensive
+2. Include specific variables or factors mentioned in the concept
+3. Reflect the precise mechanism or relationship being investigated
+4. Be suitable for empirical investigation or systematic review
+5. Avoid vague terms in favor of specific, measurable elements
 
-## Subject
+The question should be presented in plain text with no special formatting to facilitate further use.
+
+## Guidelines by Concept Type:
+- For **mechanisms/processes**: Frame questions that address "how" the process works, specifying inputs and outputs
+- For **relationships**: Specify the exact nature of the relationship (correlation, impact, mediation) and include all relevant variables
+- For **contextual factors**: Include both the primary factor and its moderating conditions
+- For **methodological considerations**: Frame as comparative questions that contrast approaches or conditions
+
+## Example
+### Subject
+Automation and Employment
+
+### Concept
+**Task-based labor market framework**: This theoretical model distinguishes between routine and non-routine tasks, explaining why certain roles are more automation-susceptible than others. Analysis would need to examine specific task compositions across sectors and how emerging technologies shift the boundaries of what's considered routine.
+
+### Generated Research Question
+How does the cognitive-manual and routine-nonroutine task composition of occupations predict their vulnerability to automation across different industry sectors?
+
+## Your Task
+### Subject
 {subject}
 
-## Concept
+### Concept
 {concept}
 
-## Research Question
+### Research Question
 """
 
 def brainstorm_approaches(question: str) -> str:
-    return f"""You are an expert at identifying high-level approaches to answering a research question.
+    return f"""
+# Research Approach Brainstorming for LLM Implementation
 
-Your task is to think strategically about various ways to tackle the question, focusing on broad strategies, methodologies, and frameworks rather than specific solutions. Consider perspectives from different disciplines, including both conventional and unconventional ideas, and incorporate a mix of qualitative and quantitative methods. Also, reflect on short-term and long-term implications.
+You are tasked with identifying high-level approaches to answer a research question using only capabilities available to large language models. Your task is to think strategically about various ways to tackle the question, focusing on strategies that can be implemented through text analysis, knowledge synthesis, and reasoning.
 
-Here are some broad approaches to research that you should consider (though you can also create your own approaches):
-1. **Systems Thinking**
-  * **What it is**: This approach looks at the interconnectedness of components within a system, focusing on relationships, feedback loops, and the bigger picture.
-  * **Why it's useful**: It's great for complex questions where multiple factors interact—like climate change or urban planning—because it encourages a holistic view.
-2. **Reductionism**
-  * **What it is**: This involves breaking down a complex research question into smaller, manageable parts.
-  * **Why it's useful**: It simplifies the process by allowing focused investigation of individual pieces before putting them back together.
-3. **Interdisciplinary Approaches**
-  * **What it is**: This combines methods and insights from different fields to tackle a question from multiple angles.
-  * **Why it's useful**: Many modern challenges—like public health or sustainability—benefit from diverse perspectives.
-4. **Iterative Refinement**
-  * **What it is**: This is about refining a research question or approach through repeated cycles of feedback and adjustment.
-  * **Why it's useful**: Research often evolves, and this flexibility allows for continuous improvement.
-5. **Comparative Analysis**
-  * **What it is**: This examines a question by comparing different cases, scenarios, or examples to find patterns or lessons.
-  * **Why it's useful**: It's helpful for understanding what works or fails in different contexts—like comparing policies across cities.
-6. **Data-Driven Approaches**
-  * **What it is**: This relies on empirical data, statistics, or modeling to guide the research process.
-  * **Why it's useful**: It ensures the research is grounded in evidence, which is key for testing ideas or making recommendations.
+Consider approaches that leverage:
+- Existing knowledge within your training data
+- Logical reasoning and inference
+- Conceptual frameworks and models
+- Comparative analysis of existing information
+- Thought experiments and hypothetical scenarios
 
-For each approach, provide:
-- **Definition**: A brief description of what the approach entails.
-- **Explanation**: Why this approach is valuable for researching and answering the question.
+For each approach, provide your response in this format:
+* **APPROACH:** [Name of the approach]
+  * **DEFINITION:** [Brief description of what the approach entails (1-2 sentences)]
+  * **EXPLANATION:** [Why this approach is valuable for researching this question (2-3 sentences)]
+  * **IMPLEMENTATION:** [How you would execute this approach as an LLM]
+  * **LIMITATIONS:** [Challenges you might face with this approach]
 
-Present your ideas as a list of bullet points in the following format:
-* **<approach name>**
-  * **Definition**: <definition>
-  * **Explanation**: <explanation>
+Consider these LLM-appropriate research approaches (though you may suggest others):
+1. **Knowledge Synthesis**: Integrating information from various domains to form comprehensive perspectives
+2. **Concept Mapping**: Identifying and organizing key concepts and their relationships
+3. **Analogical Reasoning**: Drawing comparisons to similar domains or problems
+4. **Theoretical Analysis**: Applying established theoretical frameworks to understand the question
+5. **Multi-perspective Analysis**: Examining the question from different disciplinary or philosophical viewpoints
+6. **Historical Pattern Recognition**: Identifying relevant historical precedents or trends
 
-## Example
-### Question
-How can traffic congestion be reduced in large cities?
+Generate 4-6 approaches that would be most relevant to the research question.
 
-### Brainstorm
-* Systems Thinking Approach
-  * Definition: Analyzing how transportation, urban planning, economic activities, and social behaviors interconnect within the city to create comprehensive strategies that reduce traffic congestion.
-  * Explanation: This approach is valuable because it uncovers how different elements contribute to congestion, enabling a holistic understanding that can guide comprehensive research and solutions.
-* Data-Driven Approach
-  * Definition: Collecting and analyzing extensive data on traffic patterns, commuter behaviors, and infrastructure use to pinpoint effective ways to reduce traffic congestion.
-  * Explanation: This approach provides empirical evidence to identify congestion causes and test hypotheses, making it essential for grounding the research in measurable insights.
-* Behavioral Economics Approach
-  * Definition: Studying how people's transportation choices are influenced by behavior, decision-making, and incentives to design interventions that reduce traffic congestion.
-Explanation: Understanding the psychological and economic drivers of congestion can reveal opportunities to influence commuter habits, offering a unique angle for both short-term and long-term research.
-  * Explanation: Understanding the psychological and economic drivers of congestion can reveal opportunities to influence commuter habits, offering a unique angle for both short-term and long-term research.
-* Policy and Governance Approach
-  * Definition: Investigating how government policies, regulations, and urban planning can be shaped to manage and reduce traffic congestion effectively.
-  * Explanation: This approach is critical for researching how structural and legal mechanisms can address congestion, providing a lens into scalable, enforceable strategies.
-* Technological Innovation Approach
-  * Definition: Exploring how new technologies, like smart traffic systems and autonomous vehicles, can be used to develop solutions that reduce traffic congestion.
-  * Explanation: This approach allows research into cutting-edge solutions, assessing their feasibility and impact over time, which is key for forward-looking planning.
-
-## Assistant
-### Question
+## Research Question
 {question}
 
-### Brainstorm
+## Approaches
 """
 
-def pick_top_ideas(question: str, ideas: str) -> str:
-    return f"""You are an expert at analyzing brainstorming ideas about different way to approach answering a research question. Your job is review the ideas and pick the top 5 (if there are enough ideas).
+def pick_top_strategies(question: str, ideas: str) -> str:
+    return f"""
+# Evaluate and Select Optimal Research Approaches
 
-Please return each idea in the format `IDEA: <idea>` so I can easily identify and extract the idea. Please do **NOT** include any explanation for the idea, just the research approach idea itself.
-
-Here is some criteria to consider when making your decision on the top ideas:
-1. Pick ideas that are directly relevant to answering the question.
-2. Pick ideas that allow you to explore the question from a different angle.
-3. Pick ideas that are clear and specific.
-4. Pick ideas that a large language model (LLM) like you could answer (e.g., avoid ideas like conducting a new survey or interviews).
-
-## Example
-### Question
-How can traffic congestion be reduced in large cities?
-
-### Ideas
-* Systems Thinking Approach
-  * Definition: Analyzing how transportation, urban planning, economic activities, and social behaviors interconnect within the city to create comprehensive strategies that reduce traffic congestion.
-  * Explanation: This approach is valuable because it uncovers how different elements contribute to congestion, enabling a holistic understanding that can guide comprehensive research and solutions.
-* Data-Driven Approach
-  * Definition: Collecting and analyzing extensive data on traffic patterns, commuter behaviors, and infrastructure use to pinpoint effective ways to reduce traffic congestion.
-  * Explanation: This approach provides empirical evidence to identify congestion causes and test hypotheses, making it essential for grounding the research in measurable insights.
-* Behavioral Economics Approach
-  * Definition: Studying how people's transportation choices are influenced by behavior, decision-making, and incentives to design interventions that reduce traffic congestion.
-Explanation: Understanding the psychological and economic drivers of congestion can reveal opportunities to influence commuter habits, offering a unique angle for both short-term and long-term research.
-  * Explanation: Understanding the psychological and economic drivers of congestion can reveal opportunities to influence commuter habits, offering a unique angle for both short-term and long-term research.
-* Policy and Governance Approach
-  * Definition: Investigating how government policies, regulations, and urban planning can be shaped to manage and reduce traffic congestion effectively.
-  * Explanation: This approach is critical for researching how structural and legal mechanisms can address congestion, providing a lens into scalable, enforceable strategies.
-* Technological Innovation Approach
-  * Definition: Exploring how new technologies, like smart traffic systems and autonomous vehicles, can be used to develop solutions that reduce traffic congestion.
-  * Explanation: This approach allows research into cutting-edge solutions, assessing their feasibility and impact over time, which is key for forward-looking planning.
-
-### Top Ideas
-* IDEA: Analyzing how transportation, urban planning, economic activities, and social behaviors interconnect within the city to create comprehensive strategies that reduce traffic congestion.
-* IDEA: Collecting and analyzing extensive data on traffic patterns, commuter behaviors, and infrastructure use to pinpoint effective ways to reduce traffic congestion.
-* IDEA: Studying how people's transportation choices are influenced by behavior, decision-making, and incentives to design interventions that reduce traffic congestion.
-* IDEA: Investigating how government policies, regulations, and urban planning can be shaped to manage and reduce traffic congestion effectively.
-* IDEA: Exploring how new technologies, like smart traffic systems and autonomous vehicles, can be used to develop solutions that reduce traffic congestion.
-
-## Assistant
-### Question
-{question}
-
-### Ideas
+## Research Approaches
 {ideas}
 
-### Top Ideas
+## Instructions
+Based on the research approaches you've generated, identify the 2-3 most effective approaches for answering this research question. Present them in order of priority (most important first).
+
+Format your response as follows:
+
+## Most Effective Approaches (In Priority Order)
+
+* **APPROACH 1:** [Name of highest priority approach]
+  * **DEFINITION:** [Brief description of what this approach entails (1-2 sentences)]
+  * **RATIONALE:** [Why this approach is particularly effective for this question]
+  * **INTEGRATION:** [How this approach would complement or build upon other selected approaches]
+
+* **APPROACH 2:** [Name of second priority approach]
+  * **DEFINITION:** [Brief description of what this approach entails (1-2 sentences)]
+  * **RATIONALE:** [Why this approach is particularly effective for this question]
+  * **INTEGRATION:** [How this approach would complement or build upon other selected approaches]
+
+* **APPROACH 3:** [Name of third priority approach] (if applicable)
+  * **DEFINITION:** [Brief description of what this approach entails (1-2 sentences)]
+  * **RATIONALE:** [Why this approach is particularly effective for this question]
+  * **INTEGRATION:** [How this approach would complement or build upon other selected approaches]
+
+## Research Question
+{question}
 """
 
 def concept_title(concept: str) -> str:
-    return f"""You are an expert at creating a title for a given concept. This concept will be displayed to the user as a heading, and we want it to be consise and capture the essense of the concept.
+    return f"""
+# Creating Research Paper Section Headings
 
-Create a title you would likely see in a research paper or article, since that is the context this will be used.
+Convert the provided research question into a concise, clear heading suitable for a section within a research paper or article. Your heading should capture the essential focus while being appropriately brief for a section title.
 
-Please return the title with no quotes or any special format. I just want the title to be simple plain text. Do **NOT** put the word "title" in the title.
+## Guidelines for Effective Section Headings:
+1. Be concise (typically 3-7 words)
+2. Focus on the core concept or relationship
+3. Use clear, direct phrasing without unnecessary articles or conjunctions
+4. Maintain scholarly tone while being more concise than paper titles
+5. Use parallel structure for consistency with other headings
+6. Consider standard section heading formats in academic papers (e.g., "Zinc Absorption Mechanisms" rather than "The Effects of Zinc on Absorption Mechanisms")
+7. Create a heading you would likely see within a research paper or article
 
-## Example
-### Concept
-How does goal setting influence Scrum team effectiveness according to self-determination theory?
+## Examples:
 
-### Title
-Impact of Goal Setting on Scrum Team Effectiveness
+### Research Question:
+How does the cognitive-manual and routine-nonroutine task composition of occupations predict their vulnerability to automation across different industry sectors?
 
-## Assistant
-### Concept
+### Section Heading:
+Task Composition and Automation Vulnerability
+
+### Research Question: 
+To what extent does early childhood nutrition affect cognitive development and academic performance in elementary school children from different socioeconomic backgrounds?
+
+### Section Heading:
+Nutritional Impacts Across Socioeconomic Groups
+
+## Your Task:
+
+### Research Question:
 {concept}
 
-### Title
+### Section Heading:
 """
 
 def decompose_question_components(question: str) -> str:
@@ -569,30 +571,41 @@ How can renewable energy adoption be increased in urban areas?
 
 def question_topics(question: str) -> str:
     """Finds the key topics that should be defined in order to understand the question."""
-    return f"""You are an expert at analyzing a question and extracting critical and important key topics that should be defined and understood in order to answer the question.
+    return f"""
+You are an expert at analyzing research questions and identifying the fundamental topics that must be understood before attempting to answer them.
 
-You should **NOT** pick insubstational topics, but pick topics that are critical and important for the specific question. The purpose of doing this analysis is to prepare a research plan.
+When presented with a research question, extract 1-5 core scientific concepts that:
+- Form the conceptual foundation of the question
+- Would make answering impossible if misunderstood
+- Require clear definition before meaningful research can begin
 
-## Example
-### Question
-Given that AI transforms job markets by creating new job types and modifying existing ones while also affecting economic growth and inflation, what new ethical issues arise due to these changes in employment, and what ethical concerns are associated with the social effects of AI, such as changes in social interactions and relationships?
+Always include the primary subject of the research as a foundational topic.
 
-### Key Topics
-* Artificial Intelligence (AI)
-* Job Market
-* Economic Growth
-* Inflation
-* Ethical Issues
-* Social Effects
+IMPORTANT: Do NOT simply restate parts of the question as topics. For example, for a question about "medical benefits of zinc," you should NOT list "medical benefits" as a separate topic since it's merely restating part of the question.
 
-## Assistant
-### Question
+Instead, identify underlying scientific disciplines, mechanisms, or frameworks needed to understand the question. Focus on knowledge domains rather than descriptive phrases from the question.
+
+For each identified concept:
+- Explain why it's foundational to the question
+- Note what specific aspects of this concept are most relevant to the question
+
+Format your response exactly as follows:
+
+* **TOPIC 1**: [Name of first key concept]
+RELEVANCE: [Why this concept is foundational to the question]
+
+* **TOPIC 2**: [Name of second key concept]
+RELEVANCE: [Why this concept is foundational to the question]
+
+Your goal is not to create a research plan but to identify the conceptual prerequisites that anyone would need to grasp before attempting to answer this specific question.
+
+## Research Question
 {question}
 
-### Key Topics
+## Foundational Topics
 """
 
-# SOLVER
+# RESEARCHER
 # Provide the names in the format "Lastname, FirstInitial. MiddleInitial."
 def article_citation(url: str, meta_tags: List[str], content: str) -> str:
     meta_tags_combined = "\n".join([f"* {tag}" for tag in meta_tags]) 

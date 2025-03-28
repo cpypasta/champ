@@ -1,7 +1,7 @@
-import prompts, re
+import config.prompts as prompts, re
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 from rich.tree import Tree
 from rich.markdown import Markdown
 from rich.panel import Panel

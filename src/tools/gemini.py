@@ -1,7 +1,7 @@
 import requests
 from typing import Dict
 from tools.article import ResearchArticle, ArticleCitation
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 from google.genai.types import GroundingMetadata, GroundingChunk
 
 class Gemini:
@@ -64,7 +64,7 @@ class Gemini:
         }
 
 if __name__ == "__main__":
-    import prompts
+    import config.prompts as prompts
     from dotenv import load_dotenv
     from rich import print as rprint
     from rich.markdown import Markdown

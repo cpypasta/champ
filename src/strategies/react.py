@@ -1,9 +1,9 @@
-import prompts, re
+import config.prompts as prompts, re
 from dataclasses import dataclass
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich import print as rprint
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 from typing import List, Optional
 
 @dataclass

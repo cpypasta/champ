@@ -1,6 +1,5 @@
 import wikipedia
 from dataclasses import dataclass
-from tools.research_tool import ResearchTool, Question, Context
 from typing import List
 from tqdm import tqdm
 
@@ -9,7 +8,7 @@ class WikiResponse:
     title: str
     content: str
 
-class Wiki(ResearchTool):
+class Wiki:
     def search(self, query: str):
         try:
             results = wikipedia.search(query, results=1)

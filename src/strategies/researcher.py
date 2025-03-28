@@ -1,8 +1,8 @@
-import pickle, prompts, re
-from strategies.planner import ResearchPlan, ResearchConcept
+import pickle, config.prompts as prompts, re
+from strategies.planner import ResearchPlan, ResearchConcept, ResearchConceptStrategy
 from tools.perplexity import PerplexityTool
 from tools.gemini import Gemini
-from llm_caller import LLMCaller
+from tools.llm_caller import LLMCaller
 from dataclasses import dataclass, field
 from typing import List
 from rich import print as rprint
@@ -127,9 +127,9 @@ class Researcher:
             for concept in key_concepts:
                 question = concept.question
                 strategy_overviews = []
-                strategies_task = progress.add_task(f"  [blue]○ Researching strategies: {concept.title}", total=len(concept.ideas))
-                for idea in concept.ideas:
-                    strategy_overview_prompt = prompts.key_concept_overview(question, idea)
+                strategies_task = progress.add_task(f"  [blue]○ Researching strategies: {concept.title}", total=len(concept.strategies))
+                for strategy in concept.strategies:
+                    strategy_overview_prompt = prompts.key_concept_overview(question, strategy.definition)
                     strategy_overview = self.fast_llm.generate(strategy_overview_prompt)
                     strategy_overviews.append(strategy_overview)
                     progress.update(strategies_task, advance=1)
@@ -151,7 +151,7 @@ class Researcher:
                 
         stop_time = time()
         duration = format_duration(timedelta(seconds=stop_time - start_time))
-        rprint(f"[dim]Research Complete {duration}")
+        rprint(f"[bold green]Research Complete {duration}")
 
         return report
 
@@ -160,12 +160,12 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
 
-    with open("plan.pkl", "rb") as f:
+    with open("./output/plan.pkl", "rb") as f:
         plan: ResearchPlan = pickle.load(f)    
         
     llm = LLMCaller(provider="gemini")
     solver = Researcher(llm)
     report = solver.research(plan)
 
-    with open("report.md", "w") as f:
+    with open("./output/report.md", "w") as f:
         f.write(report.markdown())
